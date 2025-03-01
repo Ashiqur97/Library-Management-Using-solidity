@@ -24,6 +24,9 @@ contract LibraryManagement {
     uint256 public nextBookId = 1; 
     mapping(uint256 => Book) public books; 
     mapping(address => User) public users; 
+    mapping (uint256 => User) public requestRegister;
+
+    uint256 public requestId;
 
     address public admin; 
     address public librarian; 
@@ -37,6 +40,8 @@ contract LibraryManagement {
     event BookReturned(uint256 bookId, address borrower, uint256 finePaid);
     event BookReserved(uint256 bookId, address reservedBy);
     event FineCharged(address user, uint256 fineAmount);
+    event NewUserRequested (uint256 reqId, address user);
+    event UserApproved (uint256 reqId, string name, address user);
 
     
     modifier onlyAdmin() {
@@ -89,12 +94,26 @@ contract LibraryManagement {
         require(users[msg.sender].userAddress == address(0), "User already registered");
         require(bytes(_name).length > 0, "Name cannot be empty");
 
-        User storage newUser = users[msg.sender];
+        requestId++;
+
+        User storage newUser = requestRegister[requestId];
         newUser.userAddress = msg.sender;
         newUser.name = _name;
+
+        emit NewUserRequested(requestId, msg.sender);
+    }
+
+     function approveUser(uint256 _reqId) external onlyAdmin {
+        require(users[requestRegister[_reqId].userAddress].userAddress == address(0), "User already registered");
+
+        User storage newUser = users[requestRegister[_reqId].userAddress];
+        newUser.userAddress = requestRegister[_reqId].userAddress;
+        newUser.name = requestRegister[_reqId].name;
         newUser.borrowedBooks = new uint256[](0);
         newUser.fineAmount = 0;
        
+       delete requestRegister[_reqId];
+       emit UserApproved(_reqId, newUser.name, newUser.userAddress);
     }
 
   
