@@ -7,6 +7,8 @@ function Navigation({setCurrentSection, contract, address}) {
     const tx = await contract.admin();
     setAdmin(tx);
   }
+
+
   useEffect(() => {
     fetchAdmin()
   },[]);
@@ -19,7 +21,7 @@ function Navigation({setCurrentSection, contract, address}) {
             <li onClick={() => setCurrentSection('borrowedBooks')}>Borrowed Book</li>
             <li onClick={() => setCurrentSection('fine')}>Fine</li>
             {
-              admin === address ? <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li> : ''
+              admin.toLowerCase() === address.toLowerCase() ? <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li> : ''
             }
         </ul>
     </nav>
