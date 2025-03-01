@@ -1,8 +1,22 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './componentStyle.css';
 
 function Home({contract}) {
-  // console.log(`Contract: ${contract[0]}`)
+  const[isRegister, setIsRegister] = useState(false);
+  const[name, setName] = useState();
+
+  const handleRegisterNow = (e) => {
+    e.preventDefault();
+    setIsRegister(true);
+  }
+  const handleCompleteRegister = async (e) => {
+    e.preventDefault();
+    const tx = contract.registerUser(name);
+    await contract.provider.waitForTransaction(tx.hash);
+    setIsRegister(false);
+  }
+
+
   return (
     <div className='home-container'>
         <h2>Welcome to the Library Management System!</h2>
@@ -19,7 +33,11 @@ function Home({contract}) {
             3. Track due dates and pay fines online.
             </p>
 
-            <button>Register Now</button>
+            {
+              isRegister ? <div><input type="text" placeholder='Your Name' onChange={(e) => setName(e.target.value)} />
+            <button onClick={handleCompleteRegister}>Complete Register</button></div> : <button onClick={handleRegisterNow}>Register Now</button>
+            }
+            
         </div>
 
     </div>

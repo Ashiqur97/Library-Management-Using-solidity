@@ -79,6 +79,21 @@ nav ul li:hover {
     line-height: 1.2rem;
     text-align: left;
 }
+.howItWorks div {
+    display: flex;
+    flex-direction: column;
+}
+.howItWorks div input {
+    width: 200px;
+    padding: 8px 12px;
+    outline: none;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: -10px;
+}
+.howItWorks div button {
+    font-size: 14px;
+}
 .howItWorks button {
     margin-top: 20px;
     padding: 8px 12px;

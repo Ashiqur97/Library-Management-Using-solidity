@@ -1,25 +1,51 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 function AdminUserManagement({contract}) {
+  // const [newUser, setNewUser] = useState({
+  //   reqId: '',
+  //   user: ''
+  // });
+
+  const [reqUser, setReqUser] = useState();
+  const [requestId, setRequestId] = useState();
+
+  // const handleNewUserRequested = (requestId, user) => {
+  //   setNewUser({
+  //     reqId: requestId,
+  //     user: user,
+  //   });
+  // }
+
+  useEffect(() => {
+    if(contract) {
+      // contract.on('NewUserRequested', handleNewUserRequested);
+
+      // return () => {
+      //   contract.off('NewUserRequested', handleNewUserRequested);
+      // }
+
+      fetchRequestUser();
+    }
+    
+  },[]);
+
+  const fetchRequestUser = async () => {
+    const reqId = await contract.requestId();
+    setRequestId(reqId.toNumber());
+    const tx = await contract.requestRegister(reqId.toNumber());
+    setReqUser(tx);
+  }
+
+
+  const handleApprove = async(e) => {
+    e.preventDefault();
+    const tx = contract.approveUser(requestId);
+    await contract.provider.waitForTransaction(tx.hash);
+    alert(`${newUser.user} is approved!`);
+  }
+
   return (
     <div className='admin-usermanagement'>
-      {/* <h2>User Management</h2>
-      <div className="admin-userlist">
-        <ul>
-          <li>
-            <span>User Name</span>
-            <span>User Address</span>
-            <span>Book Borrowed</span>
-            <span>Fine</span>
-          </li>
-          <li>
-            <span>User Name</span>
-            <span>User Address</span>
-            <span>Book Borrowed</span>
-            <span>Fine</span>
-          </li>
-        </ul>
-      </div> */}
       <div className="admin-userlist">
         <h2>Pending Users</h2>
         <ul>
@@ -28,11 +54,11 @@ function AdminUserManagement({contract}) {
             <span>User Address</span>
             <span>Action</span>
           </li>
-          <li>
-            <span>User Name</span>
-            <span>User Address</span>
-            <button>Approve</button>
-          </li>
+          {reqUser ? <li>
+            <span>{reqUser.name}</span>
+            <span>{reqUser.userAddress}</span>
+            <button onClick={handleApprove}>Approve</button>
+          </li> : ''}
         </ul>
       </div>
     </div>
