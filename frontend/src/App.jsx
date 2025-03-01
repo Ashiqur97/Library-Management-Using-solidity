@@ -27,7 +27,7 @@ function App() {
 
     <div className="container">
     <Header />
-    <Navigation setCurrentSection={setCurrentSection} />
+    <Navigation setCurrentSection={setCurrentSection} contract={contract} address={address} />
     <div className="main-footer">
       <Mainsection currentSection={currentSection} contract={contract}/>
       <Footer />
