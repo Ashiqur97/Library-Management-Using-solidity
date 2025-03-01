@@ -12,6 +12,12 @@ function Navigation({setCurrentSection, contract, address}) {
   useEffect(() => {
     fetchAdmin()
   },[]);
+
+  let isAdmin;
+  if(admin) {
+   isAdmin = admin.toLowerCase() === address.toLowerCase();
+  }
+  
   
   return (
     <nav>
@@ -21,7 +27,7 @@ function Navigation({setCurrentSection, contract, address}) {
             <li onClick={() => setCurrentSection('borrowedBooks')}>Borrowed Book</li>
             <li onClick={() => setCurrentSection('fine')}>Fine</li>
             {
-              admin.toLowerCase() === address.toLowerCase() ? <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li> : ''
+             isAdmin ? <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li> : ''
             }
         </ul>
     </nav>
