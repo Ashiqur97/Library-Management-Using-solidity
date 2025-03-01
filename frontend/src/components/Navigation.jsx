@@ -1,6 +1,16 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
-function Navigation({setCurrentSection}) {
+function Navigation({setCurrentSection, contract, address}) {
+  const [admin, setAdmin] = useState();
+
+  const fetchAdmin = async () => {
+    const tx = await contract.admin();
+    setAdmin(tx);
+  }
+  useEffect(() => {
+    fetchAdmin()
+  },[]);
+  
   return (
     <nav>
         <ul>
@@ -8,7 +18,9 @@ function Navigation({setCurrentSection}) {
             <li onClick={() => setCurrentSection('books')}>Books</li>
             <li onClick={() => setCurrentSection('borrowedBooks')}>Borrowed Book</li>
             <li onClick={() => setCurrentSection('fine')}>Fine</li>
-            <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li>
+            {
+              admin === address ? <li onClick={() => setCurrentSection('adminPanel')}>Admin Panel</li> : ''
+            }
         </ul>
     </nav>
   )
