@@ -5,12 +5,12 @@ import BorrowedBook from './BorrowedBook'
 import Fine from './Fine'
 import AdminPanel from './AdminPanel'
 
-function Mainsection({currentSection, contract}) {
+function Mainsection({currentSection, contract, address}) {
   return (
     <div>
         {
             currentSection === 'home' && (
-                <Home contract={contract} />
+                <Home contract={contract} address={address} />
             )
         }
         {

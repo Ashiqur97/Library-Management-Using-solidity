@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import './componentStyle.css';
 
-function Home({contract}) {
+function Home({contract, address}) {
   const[isRegister, setIsRegister] = useState(false);
   const[name, setName] = useState();
+  const [currentUser, setCurrentUser] = useState();
 
   const handleRegisterNow = (e) => {
     e.preventDefault();
@@ -11,12 +12,22 @@ function Home({contract}) {
   }
   const handleCompleteRegister = async (e) => {
     e.preventDefault();
-    const tx = contract.registerUser(name);
-    await contract.provider.waitForTransaction(tx.hash);
+    const tx = await contract.registerUser(name);
+    // await contract.provider.waitForTransaction(tx.hash);
     setName('');
     setIsRegister(false);
 
   }
+  const fetchUser = async() => {
+    if(contract && address) {
+      const tx = await contract.users(address);
+      setCurrentUser(tx);
+      console.log(currentUser);
+    }
+  }
+  useEffect(() => {
+    fetchUser();
+  },[contract, address]);
 
 
   return (
@@ -36,7 +47,7 @@ function Home({contract}) {
             </p>
 
             {
-              isRegister ? <div><input type="text" placeholder='Your Name' onChange={(e) => setName(e.target.value)} />
+              (currentUser && currentUser.name) ? <p>You are a registered user!</p> : isRegister ? <div><input type="text" placeholder='Your Name' onChange={(e) => setName(e.target.value)} />
             <button onClick={handleCompleteRegister}>Complete Register</button></div> : <button onClick={handleRegisterNow}>Register Now</button>
             }
             
