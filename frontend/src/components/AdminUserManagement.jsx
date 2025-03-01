@@ -54,11 +54,11 @@ function AdminUserManagement({contract}) {
             <span>User Address</span>
             <span>Action</span>
           </li>
-          {reqUser ? <li>
+          {(reqUser && reqUser.name) && (<li>
             <span>{reqUser.name}</span>
             <span>{reqUser.userAddress}</span>
             <button onClick={handleApprove}>Approve</button>
-          </li> : ''}
+          </li>)}
         </ul>
       </div>
     </div>

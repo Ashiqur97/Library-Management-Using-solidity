@@ -13,7 +13,9 @@ function Home({contract}) {
     e.preventDefault();
     const tx = contract.registerUser(name);
     await contract.provider.waitForTransaction(tx.hash);
+    setName('');
     setIsRegister(false);
+
   }
 
 
