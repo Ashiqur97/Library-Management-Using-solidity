@@ -1,7 +1,8 @@
 import React from 'react'
 import './componentStyle.css';
 
-function Home() {
+function Home({contract}) {
+  // console.log(`Contract: ${contract[0]}`)
   return (
     <div className='home-container'>
         <h2>Welcome to the Library Management System!</h2>

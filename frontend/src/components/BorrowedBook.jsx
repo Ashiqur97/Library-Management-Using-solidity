@@ -1,7 +1,7 @@
 import React from 'react'
 import './componentStyle.css';
 
-function BorrowedBook() {
+function BorrowedBook({contract}) {
   return (
     <div className='borrowed-container'>
         <h2>Your Borrowed Books</h2>

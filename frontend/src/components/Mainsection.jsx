@@ -5,32 +5,32 @@ import BorrowedBook from './BorrowedBook'
 import Fine from './Fine'
 import AdminPanel from './AdminPanel'
 
-function Mainsection({currentSection}) {
+function Mainsection({currentSection, contract}) {
   return (
     <div>
         {
             currentSection === 'home' && (
-                <Home />
+                <Home contract={contract} />
             )
         }
         {
             currentSection === 'books' && (
-                <Books />
+                <Books contract={contract} />
             )
         }
         {
             currentSection === 'borrowedBooks' && (
-                <BorrowedBook />
+                <BorrowedBook contract={contract} />
             )
         }
         {
             currentSection === 'fine' && (
-                <Fine />
+                <Fine contract={contract} />
             )
         }
         {
             currentSection === 'adminPanel' &&(
-                <AdminPanel />
+                <AdminPanel contract={contract} />
             )
         }
     </div>

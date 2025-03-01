@@ -1,6 +1,6 @@
 import React from 'react'
 
-function Fine() {
+function Fine({contract}) {
   return (
     <div className='fine-container'>
         <h2>Your Fine Details</h2>

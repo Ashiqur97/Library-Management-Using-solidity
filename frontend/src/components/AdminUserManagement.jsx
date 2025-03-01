@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AdminUserManagement() {
+function AdminUserManagement({contract}) {
   return (
     <div className='admin-usermanagement'>
       {/* <h2>User Management</h2>

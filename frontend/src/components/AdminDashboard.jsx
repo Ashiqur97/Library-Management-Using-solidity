@@ -1,6 +1,6 @@
 import React from 'react'
 
-function AdminDashboard() {
+function AdminDashboard({contract}) {
   return (
     <div className='admin-dashboard'>
       <h2>Admin Dashboard</h2>

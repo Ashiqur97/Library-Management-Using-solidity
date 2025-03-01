@@ -3,7 +3,7 @@ import AdminDashboard from './AdminDashboard'
 import AdminBookManagement from './AdminBookManagement';
 import AdminUserManagement from './AdminUserManagement';
 
-function AdminPanel() {
+function AdminPanel({contract}) {
     const [activeSection, setActiveSection] = useState('dashboard');
   return (
     <div className='admin-container'>
@@ -19,17 +19,17 @@ function AdminPanel() {
             <div className="admin-content">
                 {
                     activeSection === 'dashboard' && (
-                        <AdminDashboard />
+                        <AdminDashboard contract={contract} />
                     )
                 }
                 {
                     activeSection === 'bookmanagement' && (
-                        <AdminBookManagement />
+                        <AdminBookManagement contract={contract} />
                     )
                 }
                 {
                     activeSection === 'usermanagement' && (
-                        <AdminUserManagement />
+                        <AdminUserManagement contract={contract} />
                     )
                 }
             </div>

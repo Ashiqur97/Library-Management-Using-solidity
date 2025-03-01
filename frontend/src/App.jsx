@@ -3,17 +3,33 @@ import Header from "./components/Header"
 import Mainsection from "./components/Mainsection"
 import Navigation from "./components/Navigation"
 import '../src/components/componentStyle.css';
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {connectToContract} from './utils/connectToContract.js';
 
 function App() {
   const [currentSection, setCurrentSection] = useState('home');
+  const [contract, setContract] = useState(null);
+  const [address, setAddress] = useState('');
+
+  const initContract = async () => {
+    const connectedContract = await connectToContract();
+    setContract(connectedContract);
+
+    const accounts = await window.ethereum.request({method: 'eth_requestAccounts'});
+    setAddress(accounts[0]);
+  }
+  useEffect(() => {
+    initContract();
+  },[]);
 
   return (
-   <div className="container">
+    !contract ? <button onClick={initContract}>Connect</button> :
+
+    <div className="container">
     <Header />
     <Navigation setCurrentSection={setCurrentSection} />
     <div className="main-footer">
-      <Mainsection currentSection={currentSection} />
+      <Mainsection currentSection={currentSection} contract={contract}/>
       <Footer />
     </div>
    </div>
