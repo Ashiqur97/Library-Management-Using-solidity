@@ -13,6 +13,7 @@ contract LibraryManagement {
     }
 
     struct User {
+        uint256 id; 
         address userAddress;
         string name;
         uint256[] borrowedBooks; 
@@ -20,13 +21,27 @@ contract LibraryManagement {
         uint256 fineAmount; 
     }
 
+    
+    struct UserDetails {
+        uint256 id;
+        address userAddress;
+        string name;
+        uint256[] borrowedBooks;
+        uint256 fineAmount;
+    }
+
   
     uint256 public nextBookId = 1; 
+    uint256 public nextUserId = 1; 
     mapping(uint256 => Book) public books; 
     mapping(address => User) public users; 
+
+    address[] public registeredUsers; 
+
     mapping (uint256 => User) public requestRegister;
 
     uint256 public requestId;
+
 
     address public admin; 
     address public librarian; 
@@ -59,24 +74,19 @@ contract LibraryManagement {
         _;
     }
 
-    
+  
     constructor() {
         admin = msg.sender;
         librarian = msg.sender;
     }
 
-   
+    
     function setLibrarian(address _newLibrarian) external onlyAdmin {
-        require(_newLibrarian != address(0), "Invalid librarian address");
         librarian = _newLibrarian;
     }
 
     
     function addBook(string memory _title, string memory _author, string memory _category) external onlyLibrarian {
-        require(bytes(_title).length > 0, "Title cannot be empty");
-        require(bytes(_author).length > 0, "Author cannot be empty");
-        require(bytes(_category).length > 0, "Category cannot be empty");
-        
         uint256 bookId = nextBookId++;
         books[bookId] = Book({
             id: bookId,
@@ -89,14 +99,19 @@ contract LibraryManagement {
         emit BookAdded(bookId, _title, _author, _category);
     }
 
-   
+    
     function registerUser(string memory _name) external {
         require(users[msg.sender].userAddress == address(0), "User already registered");
-        require(bytes(_name).length > 0, "Name cannot be empty");
+
+
+        
+        User storage newUser = users[msg.sender];
+        newUser.id = nextUserId++;
 
         requestId++;
 
         User storage newUser = requestRegister[requestId];
+
         newUser.userAddress = msg.sender;
         newUser.name = _name;
 
@@ -111,12 +126,18 @@ contract LibraryManagement {
         newUser.name = requestRegister[_reqId].name;
         newUser.borrowedBooks = new uint256[](0);
         newUser.fineAmount = 0;
+
+
+     
+        registeredUsers.push(msg.sender);
+
        
        delete requestRegister[_reqId];
        emit UserApproved(_reqId, newUser.name, newUser.userAddress);
+
     }
 
-  
+    
     function borrowBook(uint256 _bookId) external onlyRegisteredUser {
         Book storage book = books[_bookId];
         User storage user = users[msg.sender];
@@ -124,12 +145,11 @@ contract LibraryManagement {
         require(book.id != 0, "Book does not exist");
         require(book.isAvailable, "Book is not available");
         require(book.reservedBy == address(0) || book.reservedBy == msg.sender, "Book is reserved by another user");
-        require(user.fineAmount == 0, "Please clear outstanding fines first");
 
-        
+    
         uint256 dueDate = block.timestamp + BORROW_PERIOD;
         book.isAvailable = false;
-        book.reservedBy = address(0); 
+        book.reservedBy = address(0); // Clear reservation if any
         user.borrowedBooks.push(_bookId);
         user.dueDates[_bookId] = dueDate;
 
@@ -145,10 +165,10 @@ contract LibraryManagement {
         require(!book.isAvailable, "Book is already available");
         require(user.dueDates[_bookId] > 0, "User has not borrowed this book");
 
-        
+       
         uint256 fine = 0;
         if (block.timestamp > user.dueDates[_bookId]) {
-            uint256 daysLate = (block.timestamp - user.dueDates[_bookId] + 1 days - 1) / 1 days; 
+            uint256 daysLate = (block.timestamp - user.dueDates[_bookId]) / 1 days;
             fine = daysLate * FINE_PER_DAY;
             user.fineAmount += fine;
         }
@@ -169,7 +189,7 @@ contract LibraryManagement {
         if (fine > 0) {
             require(msg.value >= fine, "Insufficient payment for fine");
             if (msg.value > fine) {
-                payable(msg.sender).transfer(msg.value - fine); 
+                payable(msg.sender).transfer(msg.value - fine); // Refund excess payment
             }
             emit FineCharged(msg.sender, fine);
         }
@@ -184,7 +204,6 @@ contract LibraryManagement {
         require(book.id != 0, "Book does not exist");
         require(!book.isAvailable, "Book is already available");
         require(book.reservedBy == address(0), "Book is already reserved");
-        require(users[msg.sender].fineAmount == 0, "Please clear outstanding fines first");
 
         book.reservedBy = msg.sender;
         emit BookReserved(_bookId, msg.sender);
@@ -194,32 +213,79 @@ contract LibraryManagement {
     function payFine() external payable onlyRegisteredUser {
         User storage user = users[msg.sender];
         require(user.fineAmount > 0, "No outstanding fines");
+
         require(msg.value >= user.fineAmount, "Insufficient payment for fine");
+        if (msg.value > user.fineAmount) {
+            payable(msg.sender).transfer(msg.value - user.fineAmount); // Refund excess payment
+        }
 
         uint256 finePaid = user.fineAmount;
         user.fineAmount = 0;
+        emit FineCharged(msg.sender, finePaid);
+    }
 
-        if (msg.value > finePaid) {
-            payable(msg.sender).transfer(msg.value - finePaid); 
+    
+    function getAllBooks() external view returns (Book[] memory) {
+        Book[] memory result = new Book[](nextBookId - 1);
+        uint256 count = 0;
+
+        for (uint256 i = 1; i < nextBookId; i++) {
+            if (books[i].id != 0) { // Ensure the book exists
+                result[count] = books[i];
+                count++;
+            }
         }
 
-        emit FineCharged(msg.sender, finePaid);
+        
+        Book[] memory validBooks = new Book[](count);
+        for (uint256 i = 0; i < count; i++) {
+            validBooks[i] = result[i];
+        }
+
+        return validBooks;
+    }
+
+   
+    function getAllUsers() external view returns (UserDetails[] memory) {
+        UserDetails[] memory result = new UserDetails[](registeredUsers.length);
+        uint256 count = 0;
+
+        for (uint256 i = 0; i < registeredUsers.length; i++) {
+            address userAddress = registeredUsers[i];
+            User storage user = users[userAddress];
+
+            if (user.id != 0) { // Ensure the user exists
+                result[count] = UserDetails({
+                    id: user.id,
+                    userAddress: user.userAddress,
+                    name: user.name,
+                    borrowedBooks: user.borrowedBooks,
+                    fineAmount: user.fineAmount
+                });
+                count++;
+            }
+        }
+
+       
+        UserDetails[] memory validUsers = new UserDetails[](count);
+        for (uint256 i = 0; i < count; i++) {
+            validUsers[i] = result[i];
+        }
+
+        return validUsers;
     }
 
     
     function getBooks(uint256 _start, uint256 _limit) external view returns (Book[] memory) {
         require(_start < nextBookId, "Invalid start index");
-        
         uint256 end = _start + _limit;
-        if (end >= nextBookId) {
+        if (end > nextBookId - 1) {
             end = nextBookId - 1;
         }
-        
-        uint256 resultLength = end - _start + 1;
-        Book[] memory result = new Book[](resultLength);
-        
-        for (uint256 i = 0; i < resultLength; i++) {
-            result[i] = books[_start + i];
+
+        Book[] memory result = new Book[](end - _start);
+        for (uint256 i = _start; i < end; i++) {
+            result[i - _start] = books[i + 1];
         }
         return result;
     }
